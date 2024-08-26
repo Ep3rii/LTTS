@@ -2,6 +2,7 @@ import cv2
 import pytesseract
 from gtts import gTTS
 import os
+import time
 import streamlit as st
 import numpy as np
 from PIL import Image
@@ -30,38 +31,50 @@ def process_frame(image):
 
 # Interface do Streamlit
 st.title("OCR em Tempo Real com Tesseract e Streamlit")
-st.write("Carregue uma imagem ou use o upload para realizar OCR e ouvir o texto reconhecido.")
+st.write("Carregue uma imagem ou capture vídeo em tempo real para realizar OCR e ouvir o texto reconhecido.")
 
-# Opção para escolher entre upload de imagem
-option = st.selectbox("Escolha uma opção", ("Carregar Imagem"))
+# Opção para escolher entre captura de vídeo e upload de imagem
+option = st.selectbox("Escolha uma opção", ("Captura de Vídeo", "Carregar Imagem"))
 
-if option == "Carregar Imagem":
+if option == "Captura de Vídeo":
+    # Inicializar a captura de vídeo
+    cap = cv2.VideoCapture(0)
+
+    if st.button("Capturar"):
+        ret, frame = cap.read()
+        frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+        text = process_frame(frame)
+        
+        if text:
+            st.write("Texto reconhecido:")
+            st.text(text)
+            tts = gTTS(text, lang='pt')
+            tts.save("output.mp3")
+            st.audio("output.mp3", format="audio/mp3")
+        
+        # Exibir a imagem capturada
+        st.image(frame, channels="BGR")
+
+    cap.release()
+
+elif option == "Carregar Imagem":
     uploaded_file = st.file_uploader("Escolha uma imagem...", type=["jpg", "jpeg", "png"])
     
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         image = np.array(image)
-
-        # Converte a imagem para BGR (OpenCV usa BGR por padrão)
-        if image.ndim == 3 and image.shape[2] == 4:  # Se a imagem tiver um canal alfa (transparência)
-            image = cv2.cvtColor(image, cv2.COLOR_RGBA2BGR)
-        else:
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         
         text = process_frame(image)
         
         if text:
             st.write("Texto reconhecido:")
             st.text(text)
-            
-            # Converter o texto em áudio
             tts = gTTS(text, lang='pt')
-            audio_file = "output.mp3"
-            tts.save(audio_file)
-            st.audio(audio_file, format="audio/mp3")
+            tts.save("output.mp3")
+            st.audio("output.mp3", format="audio/mp3")
         
         # Exibir a imagem carregada
-        st.image(image, channels="BGR")
+        st.image(image, channels="RGB")
 
 # Instruções para encerrar a aplicação
-st.write("Feche a aba do navegador para sair.")
+st.write("Pressione 'q' na janela de vídeo para sair (somente para captura de vídeo).")
