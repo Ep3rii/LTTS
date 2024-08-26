@@ -4,3 +4,4 @@ pytesseract
 gtts
 numpy
 Pillow
+tesseract-ocr
