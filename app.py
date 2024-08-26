@@ -2,9 +2,8 @@ import cv2
 import pytesseract
 from gtts import gTTS
 import os
-import time
-import streamlit as st
 import numpy as np
+import streamlit as st
 from PIL import Image
 
 # Configuração do caminho do Tesseract no Windows
@@ -30,51 +29,27 @@ def process_frame(image):
     return text
 
 # Interface do Streamlit
-st.title("OCR em Tempo Real com Tesseract e Streamlit")
-st.write("Carregue uma imagem ou capture vídeo em tempo real para realizar OCR e ouvir o texto reconhecido.")
+st.title("OCR com Tesseract e Streamlit")
+st.write("Carregue uma imagem para realizar OCR e ouvir o texto reconhecido.")
 
-# Opção para escolher entre captura de vídeo e upload de imagem
-option = st.selectbox("Escolha uma opção", ("Captura de Vídeo", "Carregar Imagem"))
+# Opção para carregar imagem
+uploaded_file = st.file_uploader("Escolha uma imagem...", type=["jpg", "jpeg", "png"])
 
-if option == "Captura de Vídeo":
-    # Inicializar a captura de vídeo
-    cap = cv2.VideoCapture(0)
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    image = np.array(image)
 
-    if st.button("Capturar"):
-        ret, frame = cap.read()
-        frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
-        text = process_frame(frame)
-        
-        if text:
-            st.write("Texto reconhecido:")
-            st.text(text)
-            tts = gTTS(text, lang='pt')
-            tts.save("output.mp3")
-            st.audio("output.mp3", format="audio/mp3")
-        
-        # Exibir a imagem capturada
-        st.image(frame, channels="BGR")
-
-    cap.release()
-
-elif option == "Carregar Imagem":
-    uploaded_file = st.file_uploader("Escolha uma imagem...", type=["jpg", "jpeg", "png"])
+    text = process_frame(image)
     
-    if uploaded_file is not None:
-        image = Image.open(uploaded_file)
-        image = np.array(image)
-        
-        text = process_frame(image)
-        
-        if text:
-            st.write("Texto reconhecido:")
-            st.text(text)
-            tts = gTTS(text, lang='pt')
-            tts.save("output.mp3")
-            st.audio("output.mp3", format="audio/mp3")
-        
-        # Exibir a imagem carregada
-        st.image(image, channels="RGB")
+    if text:
+        st.write("Texto reconhecido:")
+        st.text(text)
+        tts = gTTS(text, lang='pt')
+        tts.save("output.mp3")
+        st.audio("output.mp3", format="audio/mp3")
+    
+    # Exibir a imagem carregada
+    st.image(image, channels="RGB")
 
-# Instruções para encerrar a aplicação
-st.write("Pressione 'q' na janela de vídeo para sair (somente para captura de vídeo).")
+# Nota para usuários
+st.write("A funcionalidade de captura de vídeo em tempo real não está disponível no Streamlit online.")
