@@ -1,4 +1,6 @@
-opencv-python
+streamlit
+opencv-python-headless
 pytesseract
-gTTS
+gtts
 numpy
+Pillow
