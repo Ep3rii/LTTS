@@ -7,7 +7,7 @@ import streamlit as st
 from PIL import Image
 
 # Configuração do caminho do Tesseract no Windows
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Função para processar a imagem e aplicar OCR
 def process_frame(image):
